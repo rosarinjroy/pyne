@@ -8,9 +8,8 @@ $ ./pyne --help
 usage: Python one-liner tool to process lines one by one [-h] [--no-strip] [--no-skip-empty] [--sep SEP] [--begin BEGIN] [--end END] body
 
 positional arguments:
-  body             BODY block that gets executed for each line. If the BODY block has format @<file_name>,
-                   then an editor is launched to edit the BODY. If you give @@ as BODY,
-                   an anonymous temp file is open to edit BODY.
+  body             BODY block that gets executed for each line.
+                   If the BODY block has format @<file_name>, the BODY is loaded from <file_name>.
                    The following variables are available during the execution of the program.
                         L - Current line being processed (refer the --no-strip argument)
                         P - print() function
@@ -22,7 +21,7 @@ positional arguments:
 options:
   -h, --help       show this help message and exit
   --no-strip       Disables stripping leading and trailing whitespaces.
-  --no-skip-empty  Do not skip empty lines. By default empty lines are omitted
+  --no-skip-empty  Do not skip empty lines. By default empty lines are skipped
   --sep SEP        Field separator regex. Default sep: [ 	]+
   --begin BEGIN    BEGIN block that gets executed once before processing any line.
                    Any variables defined in this block are available throughout the program.

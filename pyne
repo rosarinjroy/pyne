@@ -66,16 +66,15 @@ def main():
                                              "whitespaces."))
     parser.add_argument("--no-skip-empty", action='store_true', required=False,
                         default=False, help=("Do not skip empty lines. By default empty lines are " +
-                                            "omitted"))
+                                            "skipped"))
     parser.add_argument("--sep", type=str, nargs=1, required=False, default=[pyne_default_sep],
                         help=(f"Field separator regex. Default sep: {pyne_default_sep}")) 
     parser.add_argument("--begin", type=str, nargs=1, required=False, default=[""], 
         help=("BEGIN block that gets executed once before processing any line.\n" + 
             "Any variables defined in this block are available throughout the program."))
     parser.add_argument("body", type=str, nargs=1,
-        help=("BODY block that gets executed for each line. If the BODY block has format @<file_name>, \n" + 
-                "then an editor is launched to edit the BODY. If you give @@ as BODY, \n" + 
-                "an anonymous temp file is open to edit BODY.\n" +
+        help=("BODY block that gets executed for each line.\n" + 
+              "If the BODY block has format @<file_name>, the BODY is loaded from <file_name>.\n" +
               "The following variables are available during the execution of the program. \n" +
               "     L - Current line being processed (refer the --no-strip argument)\n" +
               "     P - print() function\n" +
