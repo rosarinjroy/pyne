@@ -5,7 +5,8 @@ A Python one-liner tool that works similar to "perl -ne" (hence the name pyne, "
 
 ```
 $ ./pyne --help
-usage: Python one-liner tool to process lines one by one [-h] [--no-strip] [--no-skip-empty] [--sep SEP] [--begin BEGIN] [--end END] body
+usage: Python one-liner tool to process lines one by one [-h] [--no-strip] [--json] [--no-skip-empty] [--sep SEP] [--begin BEGIN] [--end END]
+                                                         body
 
 positional arguments:
   body             BODY block that gets executed for each line.
@@ -15,18 +16,19 @@ positional arguments:
                         P - print() function
                         J - JSON module
                         R - re module for regex processing
-                        NR - Record number starting with 1
+                        NR - Record number (starts with 1)
                         NF - Num of fields in the current record
 
 options:
   -h, --help       show this help message and exit
   --no-strip       Disables stripping leading and trailing whitespaces.
+  --json           Loads each line as JSON record.
   --no-skip-empty  Do not skip empty lines. By default empty lines are skipped
   --sep SEP        Field separator regex. Default sep: [ 	]+
   --begin BEGIN    BEGIN block that gets executed once before processing any line.
-                   Any variables defined in this block are available throughout the program.
+                   Any variables defined in this block are visible throughout the program.
   --end END        END block that gets executed once after processing all lines.
-                   Any variables defined in BEGIN or BODY are available in this block.
+                   Any variables defined in BEGIN or BODY are visible in this block.
 ```
 
 # Examples with numbers
@@ -115,6 +117,50 @@ Stone,Sharon
 $ cat test/input2.txt | ./pyne --sep="," --begin 'cre=R.compile("man")' 'if cre.search(F[0]): P(L)'
 Thurman,Uma
 Portman,Natalie
+```
+
+# Examples with JSON files
+With `--json` option, you can instrut pyne to treat **each line** as JSON record. Exampels in this
+section use input file like this:
+
+```
+$ cat test/input3.jsonl
+{"last_name": "Winslet", "first_name": "Kate"}
+{"last_name": "Thurman", "first_name": "Uma"}
+{"last_name": "Portman", "first_name": "Natalie"}
+{"last_name": "Stone", "first_name": "Sharon"}
+```
+
+1. Print the first names of each person.
+
+```
+$ cat test/input3.jsonl | ./pyne --json 'P(F["first_name"])'
+Kate
+Uma
+Natalie
+Sharon
+```
+
+2. Prettify and print each JSON record.
+
+```
+$ cat test/input3.jsonl | ./pyne --json 'P(J.dumps(F, indent=4))'
+{
+    "last_name": "Winslet",
+    "first_name": "Kate"
+}
+{
+    "last_name": "Thurman",
+    "first_name": "Uma"
+}
+{
+    "last_name": "Portman",
+    "first_name": "Natalie"
+}
+{
+    "last_name": "Stone",
+    "first_name": "Sharon"
+}
 ```
 
 # BODY from input file

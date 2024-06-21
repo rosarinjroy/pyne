@@ -12,7 +12,8 @@ This tool can be used to write Python one-liners conveniently.
 """
 pyne_default_sep = "[ \t]+"
 
-def process(BEGIN, BODY, END, pyne_sep=pyne_default_sep, pyne_opt_no_strip=False, pyne_opt_no_skip_empty=False):
+def process(BEGIN, BODY, END, pyne_sep, pyne_opt_no_strip=False,
+            pyne_opt_no_skip_empty=False, pyne_opt_json=False):
     # print(f"BODY: [{BODY}]")
     # To avoid collision with user defined variables in BEGIN, BODY or END blocks,
     # we prefix all variable names with `pyne_` prefix (unless they are okay to be shared with the 
@@ -22,6 +23,7 @@ def process(BEGIN, BODY, END, pyne_sep=pyne_default_sep, pyne_opt_no_strip=False
     J = json
     R = re
     F = None
+    NF = 1
     CRE = re.compile(pyne_sep)
 
     # For easy readability
@@ -36,7 +38,10 @@ def process(BEGIN, BODY, END, pyne_sep=pyne_default_sep, pyne_opt_no_strip=False
             L = L.strip()
         if pyne_skip_empty and not L:
             continue
-        F = CRE.split(L)
+        if pyne_opt_json:
+            F = J.loads(L)
+        else:
+            F = CRE.split(L)
         NF = len(F)
         NR += 1
         try:
@@ -64,6 +69,8 @@ def main():
     parser.add_argument("--no-strip", action='store_true', required=False,
                         default=False, help=("Disables stripping leading and trailing " +
                                              "whitespaces."))
+    parser.add_argument("--json", action='store_true', required=False,
+                        default=False, help=("Loads each line as JSON record."))
     parser.add_argument("--no-skip-empty", action='store_true', required=False,
                         default=False, help=("Do not skip empty lines. By default empty lines are " +
                                             "skipped"))
@@ -71,7 +78,7 @@ def main():
                         help=(f"Field separator regex. Default sep: {pyne_default_sep}")) 
     parser.add_argument("--begin", type=str, nargs=1, required=False, default=[""], 
         help=("BEGIN block that gets executed once before processing any line.\n" + 
-            "Any variables defined in this block are available throughout the program."))
+            "Any variables defined in this block are visible throughout the program."))
     parser.add_argument("body", type=str, nargs=1,
         help=("BODY block that gets executed for each line.\n" + 
               "If the BODY block has format @<file_name>, the BODY is loaded from <file_name>.\n" +
@@ -80,11 +87,11 @@ def main():
               "     P - print() function\n" +
               "     J - JSON module\n" + 
               "     R - re module for regex processing\n" + 
-              "     NR - Record number starting with 1\n" + 
+              "     NR - Record number (starts with 1)\n" + 
               "     NF - Num of fields in the current record\n"))
     parser.add_argument("--end", type=str, nargs=1, required=False, default=[""], 
         help=("END block that gets executed once after processing all lines.\n" + 
-            "Any variables defined in BEGIN or BODY are available in this block."))
+            "Any variables defined in BEGIN or BODY are visible in this block."))
 
     args = parser.parse_args()
     if args.body[0].startswith("@"):
@@ -94,7 +101,7 @@ def main():
 
     # print(args)
     process(args.begin[0], body, args.end[0], pyne_sep=args.sep[0], pyne_opt_no_strip=args.no_strip,
-            pyne_opt_no_skip_empty=args.no_skip_empty)
+            pyne_opt_no_skip_empty=args.no_skip_empty, pyne_opt_json=args.json)
 
 if __name__ == '__main__':
     main()
