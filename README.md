@@ -1,5 +1,5 @@
 # pyne
-A Python one-liner tool that works similar to "perl -ne" to transform inputs line-by-line. Aims to replace awk scripts with simple one liners. You have the full capability to write any Python script.
+A Python one-liner tool that works similar to "perl -ne" (hence the name pyne, "py -ne"). This tool filters and transforms stdin line-by-line. Pyne aims to replace awk scripts with simple Python one-liners.
 
 # Examples with numbers
 
@@ -92,7 +92,8 @@ Portman,Natalie
 # BODY from input file
 Sometimes one-liners are not really one-liners and may need to be folded into multiple lines for
 readability and reusability. In such cases, you can store the BODY part of the one-liner in a file
-and provide the file name as BODY. You need to prefix the file name with an "@".
+and provide the file name as BODY. You need to prefix the file name with an "@". Following script
+prints each line with "man" in last name with "match" prefix and others with "NO match" prefix.
 
 ```
 $ cat /tmp/script.py
