@@ -1,6 +1,35 @@
 # pyne
 A Python one-liner tool that works similar to "perl -ne" (hence the name pyne, "py -ne"). This tool filters and transforms stdin line-by-line. Pyne aims to replace awk scripts with simple Python one-liners.
 
+# Help
+
+```
+$ ./pyne --help
+usage: Python one-liner tool to process lines one by one [-h] [--no-strip] [--no-skip-empty] [--sep SEP] [--begin BEGIN] [--end END] body
+
+positional arguments:
+  body             BODY block that gets executed for each line. If the BODY block has format @<file_name>,
+                   then an editor is launched to edit the BODY. If you give @@ as BODY,
+                   an anonymous temp file is open to edit BODY.
+                   The following variables are available during the execution of the program.
+                        L - Current line being processed (refer the --no-strip argument)
+                        P - print() function
+                        J - JSON module
+                        R - re module for regex processing
+                        NR - Record number starting with 1
+                        NF - Num of fields in the current record
+
+options:
+  -h, --help       show this help message and exit
+  --no-strip       Disables stripping leading and trailing whitespaces.
+  --no-skip-empty  Do not skip empty lines. By default empty lines are omitted
+  --sep SEP        Field separator regex. Default sep: [ 	]+
+  --begin BEGIN    BEGIN block that gets executed once before processing any line.
+                   Any variables defined in this block are available throughout the program.
+  --end END        END block that gets executed once after processing all lines.
+                   Any variables defined in BEGIN or BODY are available in this block.
+```
+
 # Examples with numbers
 
 The content of the sample input file is:
