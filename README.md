@@ -89,3 +89,25 @@ Thurman,Uma
 Portman,Natalie
 ```
 
+# BODY from input file
+Sometimes one-liners are not really one-liners and may need to be folded into multiple lines for
+readability and reusability. In such cases, you can store the BODY part of the one-liner in a file
+and provide the file name as BODY. You need to prefix the file name with an "@".
+
+```
+$ cat /tmp/script.py
+if cre.search(F[0]):
+    P("match    :", L)
+else:
+    P("NO match :", L)
+
+$ cat test/input2.txt | ./pyne --sep="," --begin 'cre=R.compile("man")' "@/tmp/script.py"
+NO match : Winslet,Kate
+match    : Thurman,Uma
+match    : Portman,Natalie
+NO match : Stone,Sharon
+```
+
+You can cut down a lot of boilerplate and just write your script to process input and produce
+output.
+

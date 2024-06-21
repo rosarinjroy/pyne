@@ -5,6 +5,7 @@ import sys
 import os
 import json
 import re
+import tempfile
 
 """
 This tool can be used to write Python one-liners conveniently.
@@ -12,7 +13,7 @@ This tool can be used to write Python one-liners conveniently.
 pyne_default_sep = "[ \t]+"
 
 def process(BEGIN, BODY, END, pyne_sep=pyne_default_sep, pyne_opt_no_strip=False, pyne_opt_no_skip_empty=False):
-    print(f"BODY: [{BODY}]")
+    # print(f"BODY: [{BODY}]")
     # To avoid collision with user defined variables in BEGIN, BODY or END blocks,
     # we prefix all variable names with `pyne_` prefix (unless they are okay to be shared with the 
     # user program).
@@ -49,6 +50,14 @@ def process(BEGIN, BODY, END, pyne_sep=pyne_default_sep, pyne_opt_no_strip=False
     if END:
         exec(END)
 
+def load_body(file_name):
+    file_name = file_name[1:] # Skip the leading "@" char
+    if not os.path.exists(file_name):
+        print(f"*** FATAL *** BODY file {file_name} is not found. Aborting.")
+        sys.exit(1)
+    with open(file_name) as infile:
+        return infile.read()
+
 def main():
     parser = argparse.ArgumentParser("Python one-liner tool to process lines one by one", 
                                      formatter_class=argparse.RawTextHelpFormatter)
@@ -64,7 +73,9 @@ def main():
         help=("BEGIN block that gets executed once before processing any line.\n" + 
             "Any variables defined in this block are available throughout the program."))
     parser.add_argument("body", type=str, nargs=1,
-        help=("BODY block that gets executed for each line.\n" +
+        help=("BODY block that gets executed for each line. If the BODY block has format @<file_name>, \n" + 
+                "then an editor is launched to edit the BODY. If you give @@ as BODY, \n" + 
+                "an anonymous temp file is open to edit BODY.\n" +
               "The following variables are available during the execution of the program. \n" +
               "     L - Current line being processed (refer the --no-strip argument)\n" +
               "     P - print() function\n" +
@@ -77,8 +88,13 @@ def main():
             "Any variables defined in BEGIN or BODY are available in this block."))
 
     args = parser.parse_args()
+    if args.body[0].startswith("@"):
+        body = load_body(args.body[0])
+    else:
+        body = args.body[0]
+
     # print(args)
-    process(args.begin[0], args.body[0], args.end[0], pyne_sep=args.sep[0], pyne_opt_no_strip=args.no_strip,
+    process(args.begin[0], body, args.end[0], pyne_sep=args.sep[0], pyne_opt_no_strip=args.no_strip,
             pyne_opt_no_skip_empty=args.no_skip_empty)
 
 if __name__ == '__main__':
