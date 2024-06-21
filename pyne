@@ -8,22 +8,43 @@ import re
 
 """
 This tool can be used to write Python one-liners conveniently.
-
 """
+pyne_default_sep = "[ \t]+"
 
-def process(BEGIN, BODY, END, opt_no_strip=False):
+def process(BEGIN, BODY, END, pyne_sep=pyne_default_sep, pyne_opt_no_strip=False, pyne_opt_no_skip_empty=False):
+    print(f"BODY: [{BODY}]")
+    # To avoid collision with user defined variables in BEGIN, BODY or END blocks,
+    # we prefix all variable names with `pyne_` prefix (unless they are okay to be shared with the 
+    # user program).
     L = None # Contains the current line that is being processed
     P = print
     J = json
     R = re
+    F = None
+    CRE = re.compile(pyne_sep)
+
+    # For easy readability
+    pyne_skip_empty = not pyne_opt_no_skip_empty
 
     if BEGIN: 
         exec(BEGIN)
+    NR = 0
 
     for L in sys.stdin:
-        if not opt_no_strip: # By default we will strip the line
+        if not pyne_opt_no_strip: # By default we will strip the line
             L = L.strip()
-        exec(BODY)
+        if pyne_skip_empty and not L:
+            continue
+        F = CRE.split(L)
+        NF = len(F)
+        NR += 1
+        try:
+            exec(BODY)
+        except Exception as e:
+            print(f"Exception thrown while processing line {NR}.\n" + 
+                  f">   Line: [{L}]\n" + 
+                  f">   F   : {F}\n" +
+                  f">   Exception: {e}")
 
     if END:
         exec(END)
@@ -34,7 +55,12 @@ def main():
     parser.add_argument("--no-strip", action='store_true', required=False,
                         default=False, help=("Disables stripping leading and trailing " +
                                              "whitespaces."))
-    parser.add_argument("--begin", type=str, nargs=1, required=False, default="", 
+    parser.add_argument("--no-skip-empty", action='store_true', required=False,
+                        default=False, help=("Do not skip empty lines. By default empty lines are " +
+                                            "omitted"))
+    parser.add_argument("--sep", type=str, nargs=1, required=False, default=[pyne_default_sep],
+                        help=(f"Field separator regex. Default sep: {pyne_default_sep}")) 
+    parser.add_argument("--begin", type=str, nargs=1, required=False, default=[""], 
         help=("BEGIN block that gets executed once before processing any line.\n" + 
             "Any variables defined in this block are available throughout the program."))
     parser.add_argument("body", type=str, nargs=1,
@@ -43,15 +69,17 @@ def main():
               "     L - Current line being processed (refer the --no-strip argument)\n" +
               "     P - print() function\n" +
               "     J - JSON module\n" + 
-              "     R - re module for regex processing\n"))
-    parser.add_argument("--end", type=str, nargs=1, required=False, default="", 
+              "     R - re module for regex processing\n" + 
+              "     NR - Record number starting with 1\n" + 
+              "     NF - Num of fields in the current record\n"))
+    parser.add_argument("--end", type=str, nargs=1, required=False, default=[""], 
         help=("END block that gets executed once after processing all lines.\n" + 
             "Any variables defined in BEGIN or BODY are available in this block."))
 
     args = parser.parse_args()
-    print(args)
-
-    process(args.begin[0], args.body[0], args.end[0])
+    # print(args)
+    process(args.begin[0], args.body[0], args.end[0], pyne_sep=args.sep[0], pyne_opt_no_strip=args.no_strip,
+            pyne_opt_no_skip_empty=args.no_skip_empty)
 
 if __name__ == '__main__':
     main()
